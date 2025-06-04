@@ -8,7 +8,7 @@ st.set_page_config(page_title="Sherawali Agency - Excel Merger", layout="centere
 
 # Header
 st.title("📁 Sherawali Agency - Excel Auto Merger Tool")
-st.markdown("Developed by **ER Ruchi Tiwari** | Owners: **Santosh Tiwari** & **Krishna Tiwari**")
+st.markdown("Developed by **Ruchi** | Owners: **Santosh Tiwari** & **Krishna Tiwari**")
 st.markdown("---")
 
 # Ignore keywords
@@ -106,9 +106,10 @@ if uploaded_files:
             final_df['2nd Confirmer Name'] = 'Santosh Tiwari'
             final_df['2nd Confirmer Mobile Number'] = '2222'
 
-            # Convert to Excel in memory
+            # Convert to Excel in memory using xlsxwriter
             excel_buffer = io.BytesIO()
-            final_df.to_excel(excel_buffer, index=False, engine='openpyxl')
+            with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+                final_df.to_excel(writer, index=False)
             excel_buffer.seek(0)
 
             st.success("✅ Files merged successfully!")
@@ -129,4 +130,4 @@ else:
 
 # Footer
 st.markdown("---")
-st.markdown("Developed with ❤️ by **ER Ruchi Tiwari** for **Sherawali Agency**")
+st.markdown("Developed with ❤️ by **Ruchi** for **Sherawali Agency**")
