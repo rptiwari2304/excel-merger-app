@@ -1,19 +1,19 @@
 import streamlit as st
 import pandas as pd
-import os
 import io
-from datetime import datetime
+import zipfile
+import tempfile
+import os
 
+# App Configuration
 st.set_page_config(page_title="Sherawali Agency - Excel Merger", layout="centered")
-
 st.title("📂 Sherawali Agency - Excel Auto Merger Tool")
 st.markdown("Owner: **Santosh Tiwari** and **Krishna Tiwari**  |  Developer: **ER Ruchi Tiwari**")
 
-
-# Ignore keywords
+# Ignore Keywords
 ignore_keywords = ['merged', 'updated list']
 
-# Column map
+# Column mapping
 column_map = {
     'Customer Name': ['cust', 'name', 'customer', 'person', 'people'],
     'Chassis Number': ['chassis', 'cha', 'ch no', 'chsno'],
@@ -21,7 +21,7 @@ column_map = {
     'Registration Number': ['reg no', 'vehicle no', 'rc number', 'registration']
 }
 
-# Matching function
+# Column match helper
 def find_best_match(columns, keywords):
     for col in columns:
         col_clean = str(col).lower().strip()
@@ -30,76 +30,83 @@ def find_best_match(columns, keywords):
                 return col
     return None
 
-uploaded_files = st.file_uploader("📥 Upload Excel Files", type=['xls', 'xlsx'], accept_multiple_files=True)
+# Upload zip
+uploaded_zip = st.file_uploader("📁 Upload ZIP file containing Excel files", type=["zip"])
 
-if uploaded_files:
-    if st.button("🔄 Merge Files"):
-        merged_data = []
-        merged_files = []
+if uploaded_zip:
+    if st.button("🔄 Merge Excel Files from ZIP"):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            zip_path = os.path.join(tmpdir, "uploaded.zip")
+            with open(zip_path, "wb") as f:
+                f.write(uploaded_zip.read())
+            
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                zip_ref.extractall(tmpdir)
 
-        for uploaded_file in uploaded_files:
-            filename = uploaded_file.name.lower()
-            if not any(kw in filename for kw in ignore_keywords):
-                try:
-                    excel_file = pd.ExcelFile(uploaded_file)
-                    for sheet_name in excel_file.sheet_names:
-                        df = excel_file.parse(sheet_name)
-                        df_columns = df.columns.tolist()
-                        selected_cols = {}
+            merged_data = []
+            merged_files = []
 
-                        for std_col, variations in column_map.items():
-                            match = find_best_match(df_columns, variations)
-                            selected_cols[std_col] = match
+            for root, dirs, files in os.walk(tmpdir):
+                for file in files:
+                    if file.endswith((".xls", ".xlsx")) and not any(kw in file.lower() for kw in ignore_keywords):
+                        file_path = os.path.join(root, file)
+                        try:
+                            excel_file = pd.ExcelFile(file_path)
+                            for sheet_name in excel_file.sheet_names:
+                                df = excel_file.parse(sheet_name)
+                                df_columns = df.columns.tolist()
+                                selected_cols = {}
 
-                        new_df = pd.DataFrame()
-                        for col in ['Customer Name', 'Chassis Number', 'Engine Number', 'Registration Number']:
-                            if selected_cols[col]:
-                                new_df[col] = df[selected_cols[col]]
-                            else:
-                                new_df[col] = 'NOT Available'
+                                for std_col, variations in column_map.items():
+                                    match = find_best_match(df_columns, variations)
+                                    selected_cols[std_col] = match
 
-                        new_df.replace('', 'NA', inplace=True)
-                        new_df.fillna('NA', inplace=True)
+                                new_df = pd.DataFrame()
+                                for col in ['Customer Name', 'Chassis Number', 'Engine Number', 'Registration Number']:
+                                    if selected_cols[col]:
+                                        new_df[col] = df[selected_cols[col]]
+                                    else:
+                                        new_df[col] = 'NOT Available'
 
-                        merged_data.append(new_df)
-                        merged_files.append(f"{uploaded_file.name} → {sheet_name}")
+                                new_df.replace('', 'NA', inplace=True)
+                                new_df.fillna('NA', inplace=True)
 
-                except Exception as e:
-                    st.error(f"Error reading file {uploaded_file.name}: {e}")
+                                merged_data.append(new_df)
+                                merged_files.append(f"{file} → {sheet_name}")
+                        except Exception as e:
+                            st.error(f"❌ Error reading {file}: {e}")
 
-        if merged_data:
-            final_df = pd.concat(merged_data, ignore_index=True)
+            if merged_data:
+                final_df = pd.concat(merged_data, ignore_index=True)
 
-            # Add confirmer columns
-            final_df['1st Confirmer Name'] = 'Krishna Tiwari'
-            final_df['1st Confirmer Mobile Number'] = '9993654016'
-            final_df['2nd Confirmer Name'] = 'Santosh Tiwari'
-            final_df['2nd Confirmer Mobile Number'] = '9302464234'
+                # Add Confirmers
+                final_df['1st Confirmer Name'] = 'Krishna Tiwari'
+                final_df['1st Confirmer Mobile Number'] = '9993654016'
+                final_df['2nd Confirmer Name'] = 'Santosh Tiwari'
+                final_df['2nd Confirmer Mobile Number'] = '9302464234'
 
-            max_rows = 1048575
-            output_files = []
-            buffer_list = []
+                # Split by Excel row limit
+                max_rows = 1048575
+                buffer_list = []
 
-            for i in range(0, len(final_df), max_rows):
-                part_df = final_df.iloc[i:i+max_rows]
-                excel_buffer = io.BytesIO()
-                with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
-                    part_df.to_excel(writer, index=False)
-                buffer_list.append(excel_buffer)
+                for i in range(0, len(final_df), max_rows):
+                    part_df = final_df.iloc[i:i+max_rows]
+                    excel_buffer = io.BytesIO()
+                    with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+                        part_df.to_excel(writer, index=False)
+                    buffer_list.append(excel_buffer)
 
-            st.success("✅ Files merged successfully!")
-            for idx, buffer in enumerate(buffer_list, 1):
-                st.download_button(
-                    label=f"📥 Download Part {idx}",
-                    data=buffer.getvalue(),
-                    file_name=f"Updated List Part {idx}.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                )
+                st.success("✅ Files merged successfully!")
+                for idx, buffer in enumerate(buffer_list, 1):
+                    st.download_button(
+                        label=f"📥 Download Part {idx}",
+                        data=buffer.getvalue(),
+                        file_name=f"Updated_List_Part_{idx}.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    )
 
-            st.markdown("### 🔍 Merged from:")
-            for item in merged_files:
-                st.markdown(f"- {item}")
-        else:
-            st.warning("⚠️ No data found to merge.")
-else:
-    st.info("📤 Please upload Excel files to begin merging.")
+                st.markdown("### 🔍 Merged from:")
+                for item in merged_files:
+                    st.markdown(f"- {item}")
+            else:
+                st.warning("⚠️ No valid Excel files found in ZIP.")
