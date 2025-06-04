@@ -7,8 +7,8 @@ from datetime import datetime
 st.set_page_config(page_title="Sherawali Agency - Excel Merger", layout="centered")
 
 st.title("📂 Sherawali Agency - Excel Auto Merger Tool")
-st.markdown("Owner: **Santosh Tiwari** and **Krishna Tiwari**  |  Developer: **Ruchi**")
-st.markdown("Upload multiple Excel files below. Files with names like **'merged'** or **'updated list'** will be ignored.")
+st.markdown("Owner: **Santosh Tiwari** and **Krishna Tiwari**  |  Developer: **ER Ruchi Tiwari**")
+
 
 # Ignore keywords
 ignore_keywords = ['merged', 'updated list']
@@ -72,9 +72,9 @@ if uploaded_files:
 
             # Add confirmer columns
             final_df['1st Confirmer Name'] = 'Krishna Tiwari'
-            final_df['1st Confirmer Mobile Number'] = '11111'
+            final_df['1st Confirmer Mobile Number'] = '9993654016'
             final_df['2nd Confirmer Name'] = 'Santosh Tiwari'
-            final_df['2nd Confirmer Mobile Number'] = '2222'
+            final_df['2nd Confirmer Mobile Number'] = '9302464234'
 
             max_rows = 1048575
             output_files = []
