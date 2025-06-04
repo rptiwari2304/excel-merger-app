@@ -1,12 +1,20 @@
 import streamlit as st
 import pandas as pd
 import os
-from datetime import datetime
+import io
+
+# App config
+st.set_page_config(page_title="Sherawali Agency - Excel Merger", layout="centered")
+
+# Header
+st.title("📁 Sherawali Agency - Excel Auto Merger Tool")
+st.markdown("Developed by **ER Ruchi Tiwari** | Owners: **Santosh Tiwari** & **Krishna Tiwari**")
+st.markdown("---")
 
 # Ignore keywords
 ignore_keywords = ['merged', 'updated list']
 
-# Column map as per your code
+# Column map
 column_map = {
     'Customer Name': [
         'cust', 'Name', 'person', 'people', 'customer', 'cast', 'cast name', 'castnam',
@@ -52,14 +60,11 @@ def find_best_match(columns, keywords):
                 return col
     return None
 
-# Streamlit UI
-st.title("📂 Excel Merger with Auto Column Matching")
-st.markdown("Upload multiple Excel files. Files with 'merged' or 'updated list' in filename will be ignored automatically.")
-
-uploaded_files = st.file_uploader("Upload Excel Files", type=['xls', 'xlsx'], accept_multiple_files=True)
+# File uploader
+uploaded_files = st.file_uploader("📤 Upload Excel Files", type=['xls', 'xlsx'], accept_multiple_files=True)
 
 if uploaded_files:
-    if st.button("Merge Files"):
+    if st.button("🔄 Merge Files"):
         merged_data = []
         merged_files = []
 
@@ -101,30 +106,27 @@ if uploaded_files:
             final_df['2nd Confirmer Name'] = 'Santosh Tiwari'
             final_df['2nd Confirmer Mobile Number'] = '2222'
 
-            # Save output files to Desktop (split if too large)
-            desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
-            max_rows = 1048575
-            file_count = 1
-            saved_files = []
+            # Convert to Excel in memory
+            excel_buffer = io.BytesIO()
+            final_df.to_excel(excel_buffer, index=False, engine='openpyxl')
+            excel_buffer.seek(0)
 
-            for i in range(0, len(final_df), max_rows):
-                part = final_df.iloc[i:i + max_rows]
-                output_filename = f"Updated List v{file_count}.xlsx"
-                output_path = os.path.join(desktop_path, output_filename)
-                part.to_excel(output_path, index=False)
-                saved_files.append(output_path)
-                file_count += 1
+            st.success("✅ Files merged successfully!")
+            st.download_button(
+                label="📥 Download Merged Excel File",
+                data=excel_buffer,
+                file_name="Updated_List.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
 
-            st.success(f"✅ Files merged and saved successfully to your Desktop!")
-            st.markdown("### Saved Files:")
-            for fpath in saved_files:
-                st.markdown(f"- `{fpath}`")
-
-            st.markdown("### Merged sheets from:")
+            st.markdown("### ✅ Merged Sheets From:")
             for item in merged_files:
                 st.markdown(f"- {item}")
-
         else:
-            st.warning("⚠️ No data found to merge from the uploaded files.")
+            st.warning("⚠️ No data found to merge from uploaded files.")
 else:
-    st.info("Please upload Excel files to begin merging.")
+    st.info("📂 Please upload Excel files to begin merging.")
+
+# Footer
+st.markdown("---")
+st.markdown("Developed with ❤️ by **ER Ruchi Tiwari** for **Sherawali Agency**")
