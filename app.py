@@ -2,25 +2,26 @@ import streamlit as st
 import pandas as pd
 import os
 import io
-import zipfile
+from datetime import datetime
 
-# App config
 st.set_page_config(page_title="Sherawali Agency - Excel Merger", layout="centered")
 
-# Header
-st.title("📁 Sherawali Agency - Excel Auto Merger Tool")
-st.markdown("Developed by **Ruchi** | Owners: **Santosh Tiwari** & **Krishna Tiwari**")
-st.markdown("---")
+st.title("📂 Sherawali Agency - Excel Auto Merger Tool")
+st.markdown("Owner: **Santosh Tiwari** and **Krishna Tiwari**  |  Developer: **Ruchi**")
+st.markdown("Upload multiple Excel files below. Files with names like **'merged'** or **'updated list'** will be ignored.")
 
+# Ignore keywords
 ignore_keywords = ['merged', 'updated list']
 
+# Column map
 column_map = {
-    'Customer Name': ['cust', 'name', 'customer', 'person'],
-    'Chassis Number': ['chassis', 'cha', 'c no'],
-    'Engine Number': ['engine no', 'eng', 'e no'],
-    'Registration Number': ['reg', 'registration', 'rc']
+    'Customer Name': ['cust', 'name', 'customer', 'person', 'people'],
+    'Chassis Number': ['chassis', 'cha', 'ch no', 'chsno'],
+    'Engine Number': ['engine', 'eng no', 'e no', 'engan'],
+    'Registration Number': ['reg no', 'vehicle no', 'rc number', 'registration']
 }
 
+# Matching function
 def find_best_match(columns, keywords):
     for col in columns:
         col_clean = str(col).lower().strip()
@@ -29,12 +30,12 @@ def find_best_match(columns, keywords):
                 return col
     return None
 
-uploaded_files = st.file_uploader("📤 Upload Excel Files", type=['xls', 'xlsx'], accept_multiple_files=True)
+uploaded_files = st.file_uploader("📥 Upload Excel Files", type=['xls', 'xlsx'], accept_multiple_files=True)
 
 if uploaded_files:
     if st.button("🔄 Merge Files"):
         merged_data = []
-        merged_files_info = []
+        merged_files = []
 
         for uploaded_file in uploaded_files:
             filename = uploaded_file.name.lower()
@@ -61,9 +62,10 @@ if uploaded_files:
                         new_df.fillna('NA', inplace=True)
 
                         merged_data.append(new_df)
-                        merged_files_info.append(f"{uploaded_file.name} -> {sheet_name}")
+                        merged_files.append(f"{uploaded_file.name} → {sheet_name}")
+
                 except Exception as e:
-                    st.error(f"Error reading {uploaded_file.name}: {e}")
+                    st.error(f"Error reading file {uploaded_file.name}: {e}")
 
         if merged_data:
             final_df = pd.concat(merged_data, ignore_index=True)
@@ -74,36 +76,30 @@ if uploaded_files:
             final_df['2nd Confirmer Name'] = 'Santosh Tiwari'
             final_df['2nd Confirmer Mobile Number'] = '2222'
 
-            MAX_ROWS = 1048575
-            num_parts = (len(final_df) // MAX_ROWS) + 1
+            max_rows = 1048575
+            output_files = []
+            buffer_list = []
 
-            zip_buffer = io.BytesIO()
-            with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
-                for i in range(num_parts):
-                    part_df = final_df[i * MAX_ROWS:(i + 1) * MAX_ROWS]
-                    part_buffer = io.BytesIO()
-                    with pd.ExcelWriter(part_buffer, engine='openpyxl') as writer:
-                        part_df.to_excel(writer, index=False)
-                    part_buffer.seek(0)
-                    zip_file.writestr(f"Merged_{i+1}.xlsx", part_buffer.read())
+            for i in range(0, len(final_df), max_rows):
+                part_df = final_df.iloc[i:i+max_rows]
+                excel_buffer = io.BytesIO()
+                with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+                    part_df.to_excel(writer, index=False)
+                buffer_list.append(excel_buffer)
 
-            zip_buffer.seek(0)
+            st.success("✅ Files merged successfully!")
+            for idx, buffer in enumerate(buffer_list, 1):
+                st.download_button(
+                    label=f"📥 Download Part {idx}",
+                    data=buffer.getvalue(),
+                    file_name=f"Updated List Part {idx}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
 
-            st.success("✅ Merging Complete! Download All Files Below.")
-            st.download_button(
-                label="📦 Download All Merged Excel Files (ZIP)",
-                data=zip_buffer,
-                file_name="Sherawali_Agency_Merged_Files.zip",
-                mime="application/zip"
-            )
-
-            st.markdown("### ✅ Merged Sheets From:")
-            for item in merged_files_info:
+            st.markdown("### 🔍 Merged from:")
+            for item in merged_files:
                 st.markdown(f"- {item}")
         else:
-            st.warning("⚠️ No data found to merge from uploaded files.")
+            st.warning("⚠️ No data found to merge.")
 else:
-    st.info("📂 Please upload Excel files to begin merging.")
-
-st.markdown("---")
-st.markdown("Developed with ❤️ by **Ruchi** for **Sherawali Agency**")
+    st.info("📤 Please upload Excel files to begin merging.")
