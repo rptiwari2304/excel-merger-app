@@ -12,10 +12,31 @@ st.markdown("Owner: **Santosh Tiwari** and **Krishna Tiwari**  |  Developer: **E
 ignore_keywords = ['merged', 'updated list']
 
 column_map = {
-    'Customer Name': ['cust', 'name', 'customer', 'person', 'people'],
-    'Chassis Number': ['chassis', 'cha', 'ch no', 'chsno'],
-    'Engine Number': ['engine', 'eng no', 'e no', 'engan'],
-    'Registration Number': ['reg no', 'vehicle no', 'rc number', 'registration']
+    'Customer Name': ['cust', 'name', 'customer', 'person', 'people'cust', 'Name', 'person', 'people', 'customer', 'cast', 'cast name', 'castnam',
+        'customar', 'kustomer', 'custmr', 'costomer','name','PPL N',
+        'cst name', 'custumer', 'customer nam', 'nam of cust', 'nam', 'person name',
+        'castnme', 'cstm name', 'castomer', 'nme', 'castnami', 'cstmr name'],
+    'Chassis Number': ['chassis', 'cha', 'ch no', 'chsno','chassis No', 'cha', 'c no', 'chasis', 'chassis number', 'chasis no', 'chacis',
+        'chacis number', 'chassie', 'chas no', 'chas num', 'ch no', 'chas numbr','CHSNO',
+        'chass num', 'chasnam', 'cha no', 'cha num', 'che no', 'chessis', 'chasnum',
+        'chasy no', 'chasisname', 'chas number', 'chas n', 'chassi', 'chas_n', 'chasn'],
+    'Engine Number': ['engine', 'eng no', 'e no', 'engan','Engine No', 'engin no','ENGNO','engan', 'engan number', 'engan nambar', 'engine num','ENGINE NO',
+        'engan no', 'eng no', 'eng num', 'engineno', 'engine no', 'engineno.', 'e no',
+        'enjin no', 'engin numbr', 'engineno#', 'enginumber', 'eng no.', 'engn num',
+        'e num', 'en num', 'enjin num', 'eng', 'enigne', 'engn'],
+    'Registration Number': ['reg no', 'vehicle no', 'rc number', 'registration', 'reg no', 'regn no', 'registration', 'reg number', 'reg num', 'vehicle reg', 'vehicle reg no',
+        'regn number', 'reg numb', 'veh reg', 'vehicleno', 'vrn', 'regn', 'regnum', 'veh no',
+        'vehicle no', 'vehic no', 'vehregno', 'rc no', 'rc number', 'rcnum', 'rcno', 'registration#',
+        'reg#', 'reg. no', 'regno.', 'veh_reg', 'vehicle_num', 'regn.', 'veh no.', 'veh number',
+        'rego', 'regstrtn no', 'register no', 'registrationnumb', 'vehicle registration',
+        'vehiclereg', 'vehicleregnum', 'vregnum', 'vregno', 'vehicleregno', 'vehicle_reg_no',
+        'vehicleregistrationno', 'registrationnumber', 'reg_num', 'v_num', 'vehicle_regnumber',
+        'rcnumber', 'rcnumb', 'vehicleregnumbr', 'vehiclereg#', 'regn#', 'vehicleid', 'vehid',
+        'vehiclid', 'regid', 'vehicleregno.', 'regnnum', 'reg no.', 'rc_no', 'vehiclenumber',
+        'regn numb', 'rc number', 'veh_reg_no', 'vehiclereg no', 'rcno.', 'vehicle registration no',
+        'vehicle_registration_num', 'veh_regn', 'v_reg_no', 'vehregnumber', 'rc_num', 'rc_no.',
+        'vreg', 'vehiclenum', 'rcid', 'vrno', 'vnum', 'vnumber', 'vnumbr', 'vehcl no', 'vehicl_reg_no',
+        'register number', 'registered no', 'vehicleregid', 'rcident', 'rc reg no','REGNO']
 }
 
 def find_best_match(columns, keywords):
