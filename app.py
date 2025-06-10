@@ -12,7 +12,7 @@ st.markdown("Owner: **Santosh Tiwari** and **Krishna Tiwari**  |  Developer: **E
 ignore_keywords = ['merged', 'updated list']
 
 column_map = {
-    'Customer Name': ['cust', 'name', 'customer', 'person', 'people'cust', 'Name', 'person', 'people', 'customer', 'cast', 'cast name', 'castnam',
+    'Customer Name': ['cust', 'name', 'customer', 'person', 'people cust', 'Name', 'person', 'people', 'customer', 'cast', 'cast name', 'castnam',
         'customar', 'kustomer', 'custmr', 'costomer','name','PPL N',
         'cst name', 'custumer', 'customer nam', 'nam of cust', 'nam', 'person name',
         'castnme', 'cstm name', 'castomer', 'nme', 'castnami', 'cstmr name'],
